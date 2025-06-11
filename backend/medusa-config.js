@@ -51,6 +51,10 @@ const medusaConfig = {
   },
   modules: [
     {
+      key: "multiProviderFulfillmentService",
+      resolve: './src/modules/multi-provider-fulfillment',
+    },
+    {
       key: Modules.FILE,
       resolve: '@medusajs/file',
       options: {
