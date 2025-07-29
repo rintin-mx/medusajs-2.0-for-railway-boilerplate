@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, Property, ManyToOne, BeforeCreate } from "@mikro-orm/core"
 import { generateEntityId } from "@medusajs/framework/utils"
-import { ProviderFulfillment } from "./provider-fulfillment"
 
 @Entity()
 export class ProviderFulfillmentItem {
@@ -10,8 +9,8 @@ export class ProviderFulfillmentItem {
   @Property({ index: true })
   provider_fulfillment_id!: string
 
-  @ManyToOne(() => ProviderFulfillment)
-  provider_fulfillment!: ProviderFulfillment
+  @ManyToOne(() => 'ProviderFulfillment')
+  provider_fulfillment!: any
 
   @Property({ index: true })
   order_item_id!: string

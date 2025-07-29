@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, Property, OneToMany, Collection, BeforeCreate } from "@mikro-orm/core"
 import { generateEntityId } from "@medusajs/framework/utils"
-import { ProviderFulfillment } from "./provider-fulfillment"
 
 @Entity()
 export class Provider {
@@ -28,8 +27,8 @@ export class Provider {
   @Property({ default: true })
   is_active: boolean = true
 
-  @OneToMany(() => ProviderFulfillment, fulfillment => fulfillment.provider)
-  fulfillments = new Collection<ProviderFulfillment>(this)
+  @OneToMany(() => 'ProviderFulfillment', 'provider')
+  fulfillments = new Collection<any>(this)
 
   @Property({ onCreate: () => new Date() })
   created_at: Date = new Date()

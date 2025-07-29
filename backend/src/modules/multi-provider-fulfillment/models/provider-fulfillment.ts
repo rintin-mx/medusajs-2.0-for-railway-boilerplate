@@ -1,7 +1,5 @@
 import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Collection, BeforeCreate } from "@mikro-orm/core";
 import { generateEntityId } from "@medusajs/framework/utils"
-import { Provider } from "./provider"
-import { ProviderFulfillmentItem } from "./provider-fulfillment-item"
 
 @Entity()
 export class ProviderFulfillment {
@@ -14,11 +12,11 @@ export class ProviderFulfillment {
   @Property()
   provider_id!: string;
 
-  @ManyToOne(() => Provider)
-  provider!: Provider;
+  @ManyToOne(() => 'Provider')
+  provider!: any;
 
-  @OneToMany(() => ProviderFulfillmentItem, item => item.provider_fulfillment)
-  items = new Collection<ProviderFulfillmentItem>(this);
+  @OneToMany(() => 'ProviderFulfillmentItem', 'provider_fulfillment')
+  items = new Collection<any>(this);
 
   @Property({ default: 'pending' })
   status: string = 'pending';
