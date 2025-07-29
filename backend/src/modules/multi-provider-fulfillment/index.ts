@@ -1,4 +1,4 @@
-import { Module } from "@medusajs/utils"
+import ProviderService from "./services/provider"
 import ProviderFulfillmentService from "./services/provider-fulfillment"
 import { ProductInventoryService } from "./services/product-inventory"
 
@@ -16,6 +16,7 @@ export { default as ProviderFulfillmentService } from "./services/provider-fulfi
 export { ProductInventoryService } from "./services/product-inventory"
 
 // Module definition compatible with Medusa 2.0
-export default Module(MULTI_PROVIDER_FULFILLMENT_MODULE_KEY, {
+export default {
   service: ProviderFulfillmentService,
-})
+  services: [ProviderService, ProviderFulfillmentService, ProductInventoryService]
+}
