@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { ProductInventoryService } from "../../../../modules/multi-provider-fulfillment/services/product-inventory"
+import { ProductInventoryService } from "modules/multi-provider-fulfillment"
 
 export async function GET(
   req: Request,
