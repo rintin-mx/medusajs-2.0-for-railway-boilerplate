@@ -38,6 +38,11 @@ const medusaConfig = {
       storeCors: STORE_CORS,
       jwtSecret: JWT_SECRET,
       cookieSecret: COOKIE_SECRET
+    },
+    build: {
+      rollupOptions: {
+        external: ["@medusajs/dashboard"]
+      }
     }
   },
   admin: {
@@ -45,6 +50,10 @@ const medusaConfig = {
     disable: SHOULD_DISABLE_ADMIN,
   },
   modules: [
+    {
+      key: "multiProviderFulfillmentService",
+      resolve: './src/modules/multi-provider-fulfillment',
+    },
     {
       key: Modules.FILE,
       resolve: '@medusajs/file',
@@ -139,9 +148,13 @@ const medusaConfig = {
         },
         settings: {
           products: {
+            type: 'products',
+            enabled: true,
+            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
             indexSettings: {
               searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['id', 'title', 'description', 'variant_sku', 'thumbnail', 'handle'],
+              displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],
+              filterableAttributes: ['id', 'handle'],
             },
             primaryKey: 'id',
           }
