@@ -1,37 +1,35 @@
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne
-} from "typeorm"
-import { BaseEntity } from "@medusajs/framework/entities"
+import { Entity, PrimaryKey, Property, ManyToOne, BeforeCreate } from "@mikro-orm/core"
 import { generateEntityId } from "@medusajs/framework/utils"
 import { ProviderFulfillment } from "./provider-fulfillment"
 
 @Entity()
-export class ProviderFulfillmentItem extends BaseEntity {
-  @Index()
-  @Column()
-  provider_fulfillment_id: string
+export class ProviderFulfillmentItem {
+  @PrimaryKey()
+  id!: string
 
-  @ManyToOne(() => ProviderFulfillment, (fulfillment) => fulfillment.items)
-  @JoinColumn({ name: "provider_fulfillment_id" })
-  provider_fulfillment: ProviderFulfillment
+  @Property({ index: true })
+  provider_fulfillment_id!: string
 
-  @Index()
-  @Column()
-  order_item_id: string
+  @ManyToOne(() => ProviderFulfillment)
+  provider_fulfillment!: ProviderFulfillment
 
-  @Column({ type: "int" })
-  quantity: number
+  @Property({ index: true })
+  order_item_id!: string
 
-  @Column({ type: "jsonb", nullable: true })
-  metadata: Record<string, unknown>
+  @Property()
+  quantity!: number
 
-  @BeforeInsert()
-  private beforeInsert(): void {
+  @Property({ type: 'json', nullable: true })
+  metadata?: Record<string, unknown>
+
+  @Property({ onCreate: () => new Date() })
+  created_at: Date = new Date()
+
+  @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
+  updated_at: Date = new Date()
+
+  @BeforeCreate()
+  private beforeCreate(): void {
     this.id = generateEntityId(this.id, "pfi")
   }
 }

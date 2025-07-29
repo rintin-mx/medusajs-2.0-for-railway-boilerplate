@@ -27,12 +27,12 @@ export default async function RelatedProducts({
   }
 
   // edit this function to define your related products logic
-  const queryParams: StoreProductParamsWithTags = {}
+  const queryParams: StoreProductParamsWithTags & { collection_id?: string[] } = {}
   if (region?.id) {
     queryParams.region_id = region.id
   }
-  if (product.collection_id) {
-    queryParams.collection_id = [product.collection_id]
+  if ((product as any).collection_id) {
+    queryParams.collection_id = [(product as any).collection_id]
   }
   const productWithTags = product as StoreProductWithTags
   if (productWithTags.tags) {
@@ -40,7 +40,7 @@ export default async function RelatedProducts({
       .map((t) => t.value)
       .filter(Boolean) as string[]
   }
-  queryParams.is_giftcard = false
+  (queryParams as any).is_giftcard = false
 
   const products = await getProductsList({
     queryParams,

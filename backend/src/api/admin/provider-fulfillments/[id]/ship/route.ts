@@ -1,5 +1,4 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-import { MULTI_PROVIDER_FULFILLMENT_MODULE_KEY } from "../../../../../modules/multi-provider-fulfillment"
+import { Request, Response } from "express"
 import ProviderFulfillmentService from "../../../../../modules/multi-provider-fulfillment/services/provider-fulfillment"
 
 /**
@@ -7,17 +6,19 @@ import ProviderFulfillmentService from "../../../../../modules/multi-provider-fu
  * Mark a provider fulfillment as shipped
  */
 export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
+  try {
+    const providerFulfillmentService = new ProviderFulfillmentService({ manager: (req as any).manager })
+    const fulfillment = await providerFulfillmentService.update(req.params.id, {
+      status: 'shipped',
+      ...req.body
+    })
 
-  const fulfillment = await providerFulfillmentService.markAsShipped(
-    req.params.id,
-    req.body
-  )
-
-  res.json({ fulfillment })
+    res.json({ fulfillment })
+  } catch (error) {
+    console.error("Error shipping provider fulfillment:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }

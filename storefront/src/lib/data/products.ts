@@ -138,3 +138,59 @@ export const getProductsListWithSort = cache(async function ({
     queryParams,
   }
 })
+
+// Función para verificar disponibilidad de producto
+export const checkProductAvailability = cache(async function (productId: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/products/${productId}/availability`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      return false
+    }
+
+    const data = await response.json()
+    return data.isAvailable ?? false
+  } catch (error) {
+    console.error('Error verificando disponibilidad del producto:', error)
+    return false
+  }
+})
+
+// Función para filtrar productos disponibles
+export const getAvailableProductsList = cache(async function ({
+  pageParam = 1,
+  queryParams,
+  countryCode,
+}: {
+  pageParam?: number
+  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  countryCode: string
+}): Promise<{
+  response: { products: HttpTypes.StoreProduct[]; count: number }
+  nextPage: number | null
+  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+}> {
+  const result = await getProductsList({ pageParam, queryParams, countryCode })
+
+  // Filtrar productos no disponibles debido a backorder
+  const availableProducts = []
+  for (const product of result.response.products) {
+    const isAvailable = await checkProductAvailability(product.id)
+    if (isAvailable) {
+      availableProducts.push(product)
+    }
+  }
+
+  return {
+    ...result,
+    response: {
+      products: availableProducts,
+      count: availableProducts.length
+    }
+  }
+})

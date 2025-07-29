@@ -1,5 +1,4 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-import { MULTI_PROVIDER_FULFILLMENT_MODULE_KEY } from "../../../../modules/multi-provider-fulfillment"
+import { Request, Response } from "express"
 import ProviderFulfillmentService from "../../../../modules/multi-provider-fulfillment/services/provider-fulfillment"
 
 /**
@@ -7,19 +6,18 @@ import ProviderFulfillmentService from "../../../../modules/multi-provider-fulfi
  * Get a provider fulfillment by id
  */
 export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
+  try {
+    const providerFulfillmentService = new ProviderFulfillmentService({ manager: (req as any).manager })
+    const fulfillment = await providerFulfillmentService.retrieve(req.params.id)
 
-  const fulfillment = await providerFulfillmentService.retrieve(req.params.id, {
-    relations: req.query.relations?.split(",") || [],
-    select: req.query.fields?.split(",") || undefined,
-  })
-
-  res.json({ fulfillment })
+    res.json({ fulfillment })
+  } catch (error) {
+    console.error("Error retrieving provider fulfillment:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
@@ -27,68 +25,35 @@ export async function GET(
  * Update a provider fulfillment
  */
 export async function PUT(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
+  try {
+    const providerFulfillmentService = new ProviderFulfillmentService({ manager: (req as any).manager })
+    const fulfillment = await providerFulfillmentService.update(req.params.id, req.body)
 
-  const fulfillment = await providerFulfillmentService.update(req.params.id, req.body)
-
-  res.json({ fulfillment })
+    res.json({ fulfillment })
+  } catch (error) {
+    console.error("Error updating provider fulfillment:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
- * POST /admin/provider-fulfillments/:id/cancel
- * Cancel a provider fulfillment
+ * DELETE /admin/provider-fulfillments/:id
+ * Delete a provider fulfillment
  */
-export async function cancelFulfillment(
-  req: MedusaRequest,
-  res: MedusaResponse
+export async function DELETE(
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
+  try {
+    const providerFulfillmentService = new ProviderFulfillmentService({ manager: (req as any).manager })
+    await providerFulfillmentService.delete(req.params.id)
 
-  const fulfillment = await providerFulfillmentService.cancel(req.params.id)
-
-  res.json({ fulfillment })
-}
-
-/**
- * POST /admin/provider-fulfillments/:id/ship
- * Mark a provider fulfillment as shipped
- */
-export async function shipFulfillment(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
-
-  const fulfillment = await providerFulfillmentService.markAsShipped(
-    req.params.id,
-    req.body
-  )
-
-  res.json({ fulfillment })
-}
-
-/**
- * POST /admin/provider-fulfillments/:id/complete
- * Mark a provider fulfillment as completed
- */
-export async function completeFulfillment(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
-
-  const fulfillment = await providerFulfillmentService.complete(req.params.id)
-
-  res.json({ fulfillment })
+    res.status(204).end()
+  } catch (error) {
+    console.error("Error deleting provider fulfillment:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }

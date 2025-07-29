@@ -1,5 +1,4 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-import { MULTI_PROVIDER_FULFILLMENT_MODULE_KEY } from "../../../../../modules/multi-provider-fulfillment"
+import { Request, Response } from "express"
 import ProviderFulfillmentService from "../../../../../modules/multi-provider-fulfillment/services/provider-fulfillment"
 
 /**
@@ -7,17 +6,19 @@ import ProviderFulfillmentService from "../../../../../modules/multi-provider-fu
  * List provider fulfillments for a specific order
  */
 export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerFulfillmentService: ProviderFulfillmentService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.providerFulfillment`
-  )
+  try {
+    const providerFulfillmentService = new ProviderFulfillmentService({ manager: (req as any).manager })
+    const fulfillments = await providerFulfillmentService.listByOrder(req.params.orderId, {
+      skip: parseInt(req.query.offset as string) || 0,
+      take: parseInt(req.query.limit as string) || 50,
+    })
 
-  const fulfillments = await providerFulfillmentService.listByOrder(req.params.orderId, {
-    relations: req.query.relations?.split(",") || [],
-    select: req.query.fields?.split(",") || undefined,
-  })
-
-  res.json({ fulfillments })
+    res.json({ fulfillments })
+  } catch (error) {
+    console.error("Error listing order fulfillments:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }

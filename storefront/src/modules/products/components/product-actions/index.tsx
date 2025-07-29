@@ -13,6 +13,7 @@ import MobileActions from "./mobile-actions"
 import ProductPrice from "../product-price"
 import { addToCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
+import { checkProductAvailability } from "@lib/data/products"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -36,7 +37,27 @@ export default function ProductActions({
 }: ProductActionsProps) {
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [isAvailable, setIsAvailable] = useState(true)
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
   const countryCode = useParams().countryCode as string
+
+  // Verificar disponibilidad del producto
+  useEffect(() => {
+    const checkAvailability = async () => {
+      setCheckingAvailability(true)
+      try {
+        const available = await checkProductAvailability(product.id)
+        setIsAvailable(available)
+      } catch (error) {
+        console.error('Error verificando disponibilidad:', error)
+        setIsAvailable(false)
+      } finally {
+        setCheckingAvailability(false)
+      }
+    }
+
+    checkAvailability()
+  }, [product.id])
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -95,7 +116,7 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+    if (!selectedVariant?.id || !isAvailable) return null
 
     setIsAdding(true)
 
@@ -106,6 +127,20 @@ export default function ProductActions({
     })
 
     setIsAdding(false)
+  }
+
+  // Determinar si el producto puede agregarse al carrito
+  const canAddToCart = useMemo(() => {
+    return inStock && selectedVariant && isAvailable && !disabled && !isAdding
+  }, [inStock, selectedVariant, isAvailable, disabled, isAdding])
+
+  // Determinar el texto del botón
+  const getButtonText = () => {
+    if (checkingAvailability) return "Verificando disponibilidad..."
+    if (!selectedVariant) return "Seleccionar variante"
+    if (!isAvailable) return "Producto en backorder - No disponible"
+    if (!inStock) return "Sin stock"
+    return "Agregar al carrito"
   }
 
   return (
@@ -123,7 +158,7 @@ export default function ProductActions({
                       updateOption={setOptionValue}
                       title={option.title ?? ""}
                       data-testid="product-options"
-                      disabled={!!disabled || isAdding}
+                      disabled={!!disabled || isAdding || !isAvailable}
                     />
                   </div>
                 )
@@ -133,32 +168,41 @@ export default function ProductActions({
           )}
         </div>
 
+        {!isAvailable && !checkingAvailability && (
+          <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mb-4">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-orange-700">
+                  <strong>Producto en backorder:</strong> Este producto no está disponible temporalmente debido a falta de stock.
+                  No puede agregarse al carrito hasta que se repongan las existencias.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <ProductPrice product={product} variant={selectedVariant} />
 
         <Button
           onClick={handleAddToCart}
-          disabled={!inStock || !selectedVariant || !!disabled || isAdding}
-          variant="primary"
+          disabled={!canAddToCart || checkingAvailability}
+          variant={!isAvailable ? "secondary" : "primary"}
           className="w-full h-10"
-          isLoading={isAdding}
+          isLoading={isAdding || checkingAvailability}
           data-testid="add-product-button"
         >
-          {!selectedVariant
-            ? "Select variant"
-            : !inStock
-            ? "Out of stock"
-            : "Add to cart"}
+          {getButtonText()}
         </Button>
         <MobileActions
           product={product}
           variant={selectedVariant}
           options={options}
           updateOptions={setOptionValue}
-          inStock={inStock}
+          inStock={inStock && isAvailable}
           handleAddToCart={handleAddToCart}
           isAdding={isAdding}
           show={!inView}
-          optionsDisabled={!!disabled || isAdding}
+          optionsDisabled={!!disabled || isAdding || !isAvailable}
         />
       </div>
     </>

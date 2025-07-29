@@ -1,45 +1,44 @@
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  OneToMany
-} from "typeorm"
-import { BaseEntity } from "@medusajs/framework/entities"
+import { Entity, PrimaryKey, Property, OneToMany, Collection, BeforeCreate } from "@mikro-orm/core"
 import { generateEntityId } from "@medusajs/framework/utils"
 import { ProviderFulfillment } from "./provider-fulfillment"
 
 @Entity()
-export class Provider extends BaseEntity {
-  @Index({ unique: true })
-  @Column()
-  name: string
+export class Provider {
+  @PrimaryKey()
+  id!: string
 
-  @Column({ nullable: true })
-  description: string
+  @Property({ unique: true })
+  name!: string
 
-  @Column({ nullable: true })
-  email: string
+  @Property({ nullable: true })
+  description?: string
 
-  @Column({ nullable: true })
-  phone: string
+  @Property({ nullable: true })
+  email?: string
 
-  @Column({ nullable: true })
-  website: string
+  @Property({ nullable: true })
+  phone?: string
 
-  @Column({ nullable: true })
-  address: string
+  @Property({ nullable: true })
+  website?: string
 
-  @Column({ default: true })
-  is_active: boolean
+  @Property({ nullable: true })
+  address?: string
 
-  @OneToMany(() => ProviderFulfillment, (fulfillment) => fulfillment.provider)
-  @JoinColumn({ name: "id", referencedColumnName: "provider_id" })
-  fulfillments: ProviderFulfillment[]
+  @Property({ default: true })
+  is_active: boolean = true
 
-  @BeforeInsert()
-  private beforeInsert(): void {
+  @OneToMany(() => ProviderFulfillment, fulfillment => fulfillment.provider)
+  fulfillments = new Collection<ProviderFulfillment>(this)
+
+  @Property({ onCreate: () => new Date() })
+  created_at: Date = new Date()
+
+  @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
+  updated_at: Date = new Date()
+
+  @BeforeCreate()
+  private beforeCreate(): void {
     this.id = generateEntityId(this.id, "prov")
   }
 }

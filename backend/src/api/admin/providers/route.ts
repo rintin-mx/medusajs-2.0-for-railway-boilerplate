@@ -1,5 +1,4 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-import { MULTI_PROVIDER_FULFILLMENT_MODULE_KEY } from "../../../modules/multi-provider-fulfillment"
+import { Request, Response } from "express"
 import ProviderService from "../../../modules/multi-provider-fulfillment/services/provider"
 
 /**
@@ -7,21 +6,21 @@ import ProviderService from "../../../modules/multi-provider-fulfillment/service
  * List all providers
  */
 export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerService: ProviderService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.provider`
-  )
+  try {
+    const providerService = new ProviderService({ manager: (req as any).manager })
+    const providers = await providerService.list(req.query || {}, {
+      skip: parseInt(req.query.offset as string) || 0,
+      take: parseInt(req.query.limit as string) || 50,
+    })
 
-  const providers = await providerService.list(req.query || {}, {
-    relations: req.query.relations?.split(",") || [],
-    select: req.query.fields?.split(",") || undefined,
-    skip: parseInt(req.query.offset as string) || 0,
-    take: parseInt(req.query.limit as string) || 50,
-  })
-
-  res.json({ providers })
+    res.json({ providers })
+  } catch (error) {
+    console.error("Error listing providers:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
@@ -29,16 +28,18 @@ export async function GET(
  * Create a new provider
  */
 export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerService: ProviderService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.provider`
-  )
+  try {
+    const providerService = new ProviderService({ manager: (req as any).manager })
+    const provider = await providerService.create(req.body)
 
-  const provider = await providerService.create(req.body)
-
-  res.status(201).json({ provider })
+    res.status(201).json({ provider })
+  } catch (error) {
+    console.error("Error creating provider:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
@@ -46,19 +47,18 @@ export async function POST(
  * Get a provider by id
  */
 export async function getProvider(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerService: ProviderService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.provider`
-  )
+  try {
+    const providerService = new ProviderService({ manager: (req as any).manager })
+    const provider = await providerService.retrieve(req.params.id)
 
-  const provider = await providerService.retrieve(req.params.id, {
-    relations: req.query.relations?.split(",") || [],
-    select: req.query.fields?.split(",") || undefined,
-  })
-
-  res.json({ provider })
+    res.json({ provider })
+  } catch (error) {
+    console.error("Error retrieving provider:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
@@ -66,16 +66,18 @@ export async function getProvider(
  * Update a provider
  */
 export async function updateProvider(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerService: ProviderService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.provider`
-  )
+  try {
+    const providerService = new ProviderService({ manager: (req as any).manager })
+    const provider = await providerService.update(req.params.id, req.body)
 
-  const provider = await providerService.update(req.params.id, req.body)
-
-  res.json({ provider })
+    res.json({ provider })
+  } catch (error) {
+    console.error("Error updating provider:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }
 
 /**
@@ -83,14 +85,16 @@ export async function updateProvider(
  * Delete a provider
  */
 export async function deleteProvider(
-  req: MedusaRequest,
-  res: MedusaResponse
+  req: Request,
+  res: Response
 ): Promise<void> {
-  const providerService: ProviderService = req.scope.resolve(
-    `${MULTI_PROVIDER_FULFILLMENT_MODULE_KEY}.provider`
-  )
+  try {
+    const providerService = new ProviderService({ manager: (req as any).manager })
+    await providerService.delete(req.params.id)
 
-  await providerService.delete(req.params.id)
-
-  res.status(204).end()
+    res.status(204).end()
+  } catch (error) {
+    console.error("Error deleting provider:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
 }

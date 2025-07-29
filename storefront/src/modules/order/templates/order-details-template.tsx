@@ -64,6 +64,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
     }
   }
   const handleItemChange = (idx: number, value: number) => {
+    if (!editedItems) return
     const newItems = [...editedItems]
     newItems[idx].quantity = value
     setEditedItems(newItems)
@@ -75,10 +76,9 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
         <h1 className="text-2xl-semi">Order details</h1>
         <LocalizedClientLink
           href="/account/orders"
-          className="flex gap-2 items-center text-ui-fg-subtle hover:text-ui-fg-base"
-          data-testid="back-to-overview-button"
+          className="text-small-regular text-ui-fg-base"
         >
-          <XMark /> Back to overview
+          Back to overview
         </LocalizedClientLink>
       </div>
       <div
@@ -94,7 +94,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
             Editar artículos (Backorder)
           </button>
         )}
-        {editing ? (
+        {editing && editedItems ? (
           <div className="mb-4 p-4 border rounded bg-yellow-50">
             <h3 className="font-bold mb-2">Editar artículos</h3>
             <ul>

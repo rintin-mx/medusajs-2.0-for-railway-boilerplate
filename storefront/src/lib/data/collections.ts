@@ -45,7 +45,7 @@ export const getCollectionsWithProducts = cache(
 
     response.products.forEach((product) => {
       const collection = collections.find(
-        (collection) => collection.id === product.collection_id
+        (collection) => collection.id === (product as any).collection_id
       )
 
       if (collection) {
