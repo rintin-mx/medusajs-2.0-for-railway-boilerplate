@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { ProductInventoryService } from "modules/multi-provider-fulfillment"
+import { providerFulfillmentService } from "api/provider-fulfillment-service"
 
 export async function GET(
   req: Request,
@@ -8,18 +8,20 @@ export async function GET(
   const { id } = req.params
 
   try {
-    const productInventoryService = new ProductInventoryService({ manager: (req as any).manager })
-    const isAvailable = await productInventoryService.getProductAvailability(id)
+    // Use the new service instead of the old module
+    const provider = await providerFulfillmentService.getProvider(id)
+
+    if (!provider) {
+      res.status(404).json({ error: "Provider not found" })
+      return
+    }
 
     res.json({
-      isAvailable,
-      productId: id
+      provider_id: provider.id,
+      is_available: provider.is_active,
+      availability_status: provider.is_active ? 'available' : 'unavailable'
     })
   } catch (error) {
-    console.error("Error obteniendo disponibilidad del producto:", error)
-    res.status(500).json({
-      isAvailable: false,
-      error: "Error interno del servidor"
-    })
+    res.status(500).json({ error: "Failed to get provider availability" })
   }
 }
