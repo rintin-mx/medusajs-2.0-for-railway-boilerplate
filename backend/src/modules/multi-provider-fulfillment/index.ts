@@ -1,23 +1,12 @@
-// Export models first to avoid circular dependencies
+// Export models
 export { Provider } from "./models/provider"
 export { ProviderFulfillment } from "./models/provider-fulfillment"
 export { ProviderFulfillmentItem } from "./models/provider-fulfillment-item"
 export { Product } from "./models/product-provider"
 
-// Import services after models are declared
-import ProviderService from "./services/provider"
-import ProviderFulfillmentService from "./services/provider-fulfillment"
-import { ProductInventoryService } from "./services/product-inventory"
-
-export const MULTI_PROVIDER_FULFILLMENT_MODULE_KEY = "multiProviderFulfillmentService"
-
-// Export services for external use
+// Export services
 export { default as ProviderService } from "./services/provider"
 export { default as ProviderFulfillmentService } from "./services/provider-fulfillment"
 export { ProductInventoryService } from "./services/product-inventory"
 
-// Module definition compatible with Medusa 2.0
-export default {
-  service: ProviderFulfillmentService,
-  services: [ProviderService, ProviderFulfillmentService, ProductInventoryService]
-}
+export const MULTI_PROVIDER_FULFILLMENT_MODULE = "multiProviderFulfillmentService"

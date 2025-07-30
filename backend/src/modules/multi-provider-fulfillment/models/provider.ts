@@ -1,43 +1,43 @@
-import { Entity, PrimaryKey, Property, OneToMany, Collection, BeforeCreate } from "@mikro-orm/core"
-import { generateEntityId } from "@medusajs/framework/utils"
-
-@Entity()
-export class Provider {
-  @PrimaryKey()
-  id!: string
-
-  @Property({ unique: true })
-  name!: string
-
-  @Property({ nullable: true })
+// Basic TypeScript interfaces for type safety
+export interface Provider {
+  id: string
+  name: string
   description?: string
-
-  @Property({ nullable: true })
   email?: string
-
-  @Property({ nullable: true })
   phone?: string
-
-  @Property({ nullable: true })
   website?: string
-
-  @Property({ nullable: true })
   address?: string
+  is_active: boolean
+  created_at: Date
+  updated_at: Date
+}
 
-  @Property({ default: true })
-  is_active: boolean = true
+export interface ProviderFulfillment {
+  id: string
+  order_id: string
+  provider_id: string
+  status: string
+  created_at: Date
+  updated_at: Date
+}
 
-  @OneToMany(() => 'ProviderFulfillment', 'provider')
-  fulfillments = new Collection<any>(this)
+export interface ProviderFulfillmentItem {
+  id: string
+  provider_fulfillment_id: string
+  order_item_id: string
+  quantity: number
+  metadata?: Record<string, unknown>
+  created_at: Date
+  updated_at: Date
+}
 
-  @Property({ onCreate: () => new Date() })
-  created_at: Date = new Date()
-
-  @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
-  updated_at: Date = new Date()
-
-  @BeforeCreate()
-  private beforeCreate(): void {
-    this.id = generateEntityId(this.id, "prov")
-  }
+export interface Product {
+  id: string
+  product_id: string
+  provider_id: string
+  provider_product_id?: string
+  cost_price?: number
+  is_available: boolean
+  created_at: Date
+  updated_at: Date
 }

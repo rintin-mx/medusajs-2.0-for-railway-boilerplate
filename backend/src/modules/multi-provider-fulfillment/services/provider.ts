@@ -1,79 +1,42 @@
-import { EntityManager } from "@mikro-orm/core"
-import { Provider } from "../models/provider"
-
-type ProviderServiceProps = {
-  manager: EntityManager
-}
-
 class ProviderService {
-  protected manager_: EntityManager
-
-  constructor({ manager }: ProviderServiceProps) {
-    this.manager_ = manager
+  constructor(container: any) {
+    // Inicialización básica
   }
 
   /**
    * Creates a provider
-   * @param data - the provider to create
-   * @return created provider
    */
-  async create(data: Partial<Provider>): Promise<Provider> {
-    const provider = this.manager_.create(Provider, data)
-    await this.manager_.persistAndFlush(provider)
-    return provider
+  async create(data: any) {
+    // Implementación básica - necesitará ser adaptada según el ORM específico usado
+    throw new Error("Method not implemented - needs database integration")
   }
 
   /**
    * Retrieves a provider by id
-   * @param providerId - the id of the provider to retrieve
-   * @return the provider
    */
-  async retrieve(providerId: string): Promise<Provider> {
-    const provider = await this.manager_.findOne(Provider, providerId)
-
-    if (!provider) {
-      throw new Error(`Provider with id: ${providerId} not found`)
-    }
-
-    return provider
+  async retrieve(providerId: string) {
+    throw new Error("Method not implemented - needs database integration")
   }
 
   /**
-   * Lists providers based on the provided parameters
+   * Lists providers
    */
-  async list(selector: any = {}, config: any = { skip: 0, take: 50 }): Promise<Provider[]> {
-    return await this.manager_.find(Provider, selector, {
-      limit: config.take,
-      offset: config.skip
-    })
+  async list(selector: any = {}, config: any = { skip: 0, take: 50 }) {
+    throw new Error("Method not implemented - needs database integration")
   }
 
   /**
    * Updates a provider
-   * @param providerId - the id of the provider to update
-   * @param update - the update object
-   * @return updated provider
    */
-  async update(providerId: string, update: Partial<Provider>): Promise<Provider> {
-    const provider = await this.retrieve(providerId)
-
-    for (const [key, value] of Object.entries(update)) {
-      if (value !== undefined) {
-        (provider as any)[key] = value
-      }
-    }
-
-    await this.manager_.persistAndFlush(provider)
-    return provider
+  async update(providerId: string, update: any) {
+    throw new Error("Method not implemented - needs database integration")
   }
 
   /**
    * Deletes a provider
-   * @param providerId - the id of the provider to delete
    */
-  async delete(providerId: string): Promise<void> {
-    const provider = await this.retrieve(providerId)
-    await this.manager_.removeAndFlush(provider)
+  async delete(providerId: string) {
+    throw new Error("Method not implemented - needs database integration")
   }
 }
 
