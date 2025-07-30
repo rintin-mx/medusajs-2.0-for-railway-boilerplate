@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, ManyToOne } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, ManyToOne, BeforeCreate } from "@mikro-orm/core";
+import { generateEntityId } from "@medusajs/framework/utils";
 
 @Entity()
 export class Product {
@@ -6,26 +7,31 @@ export class Product {
   id!: string;
 
   @Property()
-  name!: string;
-
-  @Property({ default: true })
-  isAvailable: boolean = true;
-
-  @ManyToOne(() => Provider)
-  provider!: Provider;
-}
-
-@Entity()
-export class Provider {
-  @PrimaryKey()
-  id!: string;
+  product_id!: string;
 
   @Property()
-  name!: string;
+  provider_id!: string;
+
+  @ManyToOne(() => 'Provider')
+  provider!: any;
 
   @Property({ nullable: true })
-  contact_email?: string;
-}
+  provider_product_id?: string;
 
-// Servicio para gestionar fulfillments y backorders
-// ...aquí se implementará la lógica en el servicio correspondiente...
+  @Property({ nullable: true })
+  cost_price?: number;
+
+  @Property({ default: true })
+  is_available: boolean = true;
+
+  @Property({ onCreate: () => new Date() })
+  created_at: Date = new Date();
+
+  @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
+  updated_at: Date = new Date();
+
+  @BeforeCreate()
+  private beforeCreate(): void {
+    this.id = generateEntityId(this.id, "prod_prov");
+  }
+}
