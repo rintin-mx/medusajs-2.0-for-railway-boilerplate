@@ -1,100 +1,105 @@
-import { Request, Response } from "express"
-import ProviderService from "../../../modules/multi-provider-fulfillment/services/provider"
+import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
+import { z } from 'zod'
 
-/**
- * GET /admin/providers
- * List all providers
- */
-export async function GET(
-  req: Request,
-  res: Response
-): Promise<void> {
+// Validation schemas
+const CreateProviderSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  website: z.string().url().optional(),
+  address: z.string().optional(),
+  is_active: z.boolean().default(true)
+})
+
+const UpdateProviderSchema = CreateProviderSchema.partial()
+
+// GET /admin/providers - List all providers
+export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const providers = await providerService.list(req.query || {}, {
-      skip: parseInt(req.query.offset as string) || 0,
-      take: parseInt(req.query.limit as string) || 50,
+    const { page = 1, limit = 20, search = '', is_active } = req.query
+
+    // Mock data - Replace with actual database queries
+    const providers = [
+      {
+        id: 'prov_1',
+        name: 'Provider 1',
+        description: 'Main supplier',
+        email: 'provider1@example.com',
+        phone: '+1234567890',
+        website: 'https://provider1.com',
+        address: '123 Main St, City, Country',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        id: 'prov_2',
+        name: 'Provider 2',
+        description: 'Secondary supplier',
+        email: 'provider2@example.com',
+        phone: '+0987654321',
+        website: 'https://provider2.com',
+        address: '456 Oak Ave, City, Country',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    ]
+
+    // Filter logic
+    let filteredProviders = providers
+    if (search) {
+      filteredProviders = providers.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description?.toLowerCase().includes(search.toLowerCase())
+      )
+    }
+    if (is_active !== undefined) {
+      filteredProviders = filteredProviders.filter(p => p.is_active === (is_active === 'true'))
+    }
+
+    // Pagination
+    const total = filteredProviders.length
+    const startIndex = (Number(page) - 1) * Number(limit)
+    const endIndex = startIndex + Number(limit)
+    const paginatedProviders = filteredProviders.slice(startIndex, endIndex)
+
+    res.json({
+      providers: paginatedProviders,
+      count: paginatedProviders.length,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
     })
-
-    res.json({ providers })
   } catch (error) {
-    console.error("Error listing providers:", error)
-    res.status(500).json({ error: "Internal server error" })
+    console.error('Error fetching providers:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
 
-/**
- * POST /admin/providers
- * Create a new provider
- */
-export async function POST(
-  req: Request,
-  res: Response
-): Promise<void> {
+// POST /admin/providers - Create a new provider
+export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const provider = await providerService.create(req.body)
+    const validatedData = CreateProviderSchema.parse(req.body)
 
-    res.status(201).json({ provider })
+    // Mock creation - Replace with actual database insertion
+    const newProvider = {
+      id: `prov_${Date.now()}`,
+      ...validatedData,
+      created_at: new Date(),
+      updated_at: new Date()
+    }
+
+    res.status(201).json({ provider: newProvider })
   } catch (error) {
-    console.error("Error creating provider:", error)
-    res.status(500).json({ error: "Internal server error" })
-  }
-}
-
-/**
- * GET /admin/providers/:id
- * Get a provider by id
- */
-export async function getProvider(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const provider = await providerService.retrieve(req.params.id)
-
-    res.json({ provider })
-  } catch (error) {
-    console.error("Error retrieving provider:", error)
-    res.status(500).json({ error: "Internal server error" })
-  }
-}
-
-/**
- * PUT /admin/providers/:id
- * Update a provider
- */
-export async function updateProvider(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const provider = await providerService.update(req.params.id, req.body)
-
-    res.json({ provider })
-  } catch (error) {
-    console.error("Error updating provider:", error)
-    res.status(500).json({ error: "Internal server error" })
-  }
-}
-
-/**
- * DELETE /admin/providers/:id
- * Delete a provider
- */
-export async function deleteProvider(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    await providerService.delete(req.params.id)
-
-    res.status(204).end()
-  } catch (error) {
-    console.error("Error deleting provider:", error)
-    res.status(500).json({ error: "Internal server error" })
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: 'Validation error',
+        details: error.errors
+      })
+    }
+    console.error('Error creating provider:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }

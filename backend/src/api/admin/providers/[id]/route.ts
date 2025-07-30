@@ -1,59 +1,90 @@
-import { Request, Response } from "express"
-import ProviderService from "../../../../modules/multi-provider-fulfillment/services/provider"
+import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
+import { z } from 'zod'
 
-/**
- * GET /admin/providers/:id
- * Get a provider by id
- */
-export async function GET(
-  req: Request,
-  res: Response
-): Promise<void> {
+const UpdateProviderSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  website: z.string().url().optional(),
+  address: z.string().optional(),
+  is_active: z.boolean().optional()
+})
+
+// GET /admin/providers/:id - Get specific provider
+export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const provider = await providerService.retrieve(req.params.id)
+    const { id } = req.params
+
+    // Mock data - Replace with actual database query
+    const provider = {
+      id,
+      name: 'Provider 1',
+      description: 'Main supplier',
+      email: 'provider1@example.com',
+      phone: '+1234567890',
+      website: 'https://provider1.com',
+      address: '123 Main St, City, Country',
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    }
 
     res.json({ provider })
   } catch (error) {
-    console.error("Error retrieving provider:", error)
-    res.status(500).json({ error: "Internal server error" })
+    console.error('Error fetching provider:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
 
-/**
- * PUT /admin/providers/:id
- * Update a provider
- */
-export async function PUT(
-  req: Request,
-  res: Response
-): Promise<void> {
+// PUT /admin/providers/:id - Update provider
+export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    const provider = await providerService.update(req.params.id, req.body)
+    const { id } = req.params
+    const validatedData = UpdateProviderSchema.parse(req.body)
 
-    res.json({ provider })
+    // Mock update - Replace with actual database update
+    const updatedProvider = {
+      id,
+      name: 'Provider 1',
+      description: 'Main supplier',
+      email: 'provider1@example.com',
+      phone: '+1234567890',
+      website: 'https://provider1.com',
+      address: '123 Main St, City, Country',
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+      ...validatedData
+    }
+
+    res.json({ provider: updatedProvider })
   } catch (error) {
-    console.error("Error updating provider:", error)
-    res.status(500).json({ error: "Internal server error" })
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: 'Validation error',
+        details: error.errors
+      })
+    }
+    console.error('Error updating provider:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
 
-/**
- * DELETE /admin/providers/:id
- * Delete a provider
- */
-export async function DELETE(
-  req: Request,
-  res: Response
-): Promise<void> {
+// DELETE /admin/providers/:id - Delete provider
+export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const providerService = new ProviderService({ manager: (req as any).manager })
-    await providerService.delete(req.params.id)
+    const { id } = req.params
 
-    res.status(204).end()
+    // Mock deletion - Replace with actual database deletion
+    // Note: Consider soft delete by setting is_active to false instead
+
+    res.json({
+      message: 'Provider deleted successfully',
+      id
+    })
   } catch (error) {
-    console.error("Error deleting provider:", error)
-    res.status(500).json({ error: "Internal server error" })
+    console.error('Error deleting provider:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }

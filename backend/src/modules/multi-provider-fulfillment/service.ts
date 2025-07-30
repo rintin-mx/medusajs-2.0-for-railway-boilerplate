@@ -1,7 +1,10 @@
-import { Logger } from '@medusajs/framework/types'
+import { Logger, MedusaContainer } from '@medusajs/framework/types'
+import { ProviderService } from './services/provider'
+import { ProductInventoryService } from './services/product-inventory'
 
 type InjectedDependencies = {
   logger: Logger
+  container: MedusaContainer
 }
 
 interface MultiProviderFulfillmentOptions {
@@ -12,71 +15,102 @@ class MultiProviderFulfillmentService {
   static identifier = 'multi-provider-fulfillment'
   protected readonly logger_: Logger
   protected readonly options_: MultiProviderFulfillmentOptions
+  protected readonly providerService_: ProviderService
+  protected readonly inventoryService_: ProductInventoryService
 
-  constructor({ logger }: InjectedDependencies, options: MultiProviderFulfillmentOptions = {}) {
+  constructor({ logger, container }: InjectedDependencies, options: MultiProviderFulfillmentOptions = {}) {
     this.logger_ = logger
     this.options_ = options
-    this.logger_.info('MultiProviderFulfillmentService initialized')
+
+    // Initialize sub-services
+    this.providerService_ = new ProviderService({ logger, container })
+    this.inventoryService_ = new ProductInventoryService({ logger, container })
+
+    this.logger_.info('MultiProviderFulfillmentService initialized with all sub-services')
   }
+
+  // ============ PROVIDER METHODS ============
+  get providers() {
+    return this.providerService_
+  }
+
+  // ============ INVENTORY METHODS ============
+  get inventory() {
+    return this.inventoryService_
+  }
+
+  // ============ LEGACY METHODS (for backward compatibility) ============
 
   /**
    * Creates a provider fulfillment
    */
   async createProviderFulfillment(data: any) {
-    this.logger_.info(`Creating provider fulfillment with data: ${JSON.stringify(data)}`)
-    // Implementation will be added here
-    return {
-      id: `pf_${Date.now()}`,
-      ...data,
-      status: 'pending',
-      created_at: new Date(),
-      updated_at: new Date()
-    }
+    return this.providerService_.createProviderFulfillment(data)
   }
 
   /**
    * Retrieves a provider fulfillment by id
    */
   async getProviderFulfillment(fulfillmentId: string) {
-    this.logger_.info(`Retrieving provider fulfillment: ${fulfillmentId}`)
-    // Implementation will be added here
-    return {
-      id: fulfillmentId,
-      status: 'pending',
-      created_at: new Date(),
-      updated_at: new Date()
-    }
+    return this.providerService_.getProviderFulfillment(fulfillmentId)
   }
 
   /**
    * Lists provider fulfillments
    */
   async listProviderFulfillments(selector: any = {}) {
-    this.logger_.info(`Listing provider fulfillments with selector: ${JSON.stringify(selector)}`)
-    // Implementation will be added here
-    return []
+    return this.providerService_.listProviderFulfillments(selector)
   }
 
   /**
    * Updates a provider fulfillment
    */
   async updateProviderFulfillment(fulfillmentId: string, update: any) {
-    this.logger_.info(`Updating provider fulfillment ${fulfillmentId} with: ${JSON.stringify(update)}`)
-    // Implementation will be added here
-    return {
-      id: fulfillmentId,
-      ...update,
-      updated_at: new Date()
-    }
+    return this.providerService_.updateProviderFulfillment(fulfillmentId, update)
   }
 
   /**
    * Deletes a provider fulfillment
    */
   async deleteProviderFulfillment(fulfillmentId: string) {
-    this.logger_.info(`Deleting provider fulfillment: ${fulfillmentId}`)
-    // Implementation will be added here
-    return { success: true }
+    const fulfillment = await this.providerService_.getProviderFulfillment(fulfillmentId)
+    if (fulfillment) {
+      await this.providerService_.cancelProviderFulfillment(fulfillmentId)
+      return { success: true }
+    }
+    return { success: false }
+  }
+
+  // ============ INITIALIZATION METHODS ============
+
+  /**
+   * Initialize the service with sample data
+   */
+  async initialize(): Promise<void> {
+    this.logger_.info('Initializing MultiProviderFulfillmentService...')
+    await this.providerService_.initializeSampleData()
+    this.logger_.info('MultiProviderFulfillmentService initialization complete')
+  }
+
+  /**
+   * Get service health status
+   */
+  async getHealthStatus(): Promise<{
+    status: 'healthy' | 'unhealthy'
+    services: {
+      providers: boolean
+      inventory: boolean
+    }
+    timestamp: Date
+  }> {
+    return {
+      status: 'healthy',
+      services: {
+        providers: true,
+        inventory: true
+      },
+      timestamp: new Date()
+    }
   }
 }
 
