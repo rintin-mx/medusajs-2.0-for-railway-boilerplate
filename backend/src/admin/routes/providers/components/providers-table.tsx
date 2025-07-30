@@ -6,7 +6,12 @@ import {
   Text,
   IconButton
 } from "@medusajs/ui"
-import { PencilSquare, Trash, Plus, Eye } from "@medusajs/icons"
+import {
+  PencilSquare,
+  Trash,
+  Plus,
+  Eye
+} from "@medusajs/icons"
 
 interface Provider {
   id: string
@@ -22,9 +27,6 @@ interface Provider {
 export const ProvidersTable = () => {
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     fetchProviders()
@@ -86,16 +88,14 @@ export const ProvidersTable = () => {
   }
 
   const handleEdit = (provider: Provider) => {
-    setSelectedProvider(provider)
-    setShowEditModal(true)
+    console.log('Edit provider:', provider.id)
   }
 
   const handleDelete = async (provider: Provider) => {
-    const confirmed = window.confirm(`Are you sure you want to delete "${provider.name}"? This action cannot be undone.`)
+    const confirmed = window.confirm(`¿Estás seguro de que quieres eliminar "${provider.name}"? Esta acción no se puede deshacer.`)
 
     if (confirmed) {
       try {
-        // En producción, llamar a la API real para eliminar
         console.log(`Deleting provider ${provider.id}`)
         await fetchProviders() // Refrescar la lista
       } catch (error) {
@@ -108,11 +108,14 @@ export const ProvidersTable = () => {
     try {
       const newStatus = provider.status === 'active' ? 'inactive' : 'active'
       console.log(`Toggling provider ${provider.id} status to ${newStatus}`)
-      // En producción, llamar a la API real
       await fetchProviders() // Refrescar la lista
     } catch (error) {
       console.error('Error updating provider status:', error)
     }
+  }
+
+  const handleCreate = () => {
+    console.log('Create new provider')
   }
 
   const getStatusColor = (status: string) => {
@@ -136,7 +139,7 @@ export const ProvidersTable = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Text>Loading providers...</Text>
+        <Text>Cargando proveedores...</Text>
       </div>
     )
   }
@@ -146,161 +149,150 @@ export const ProvidersTable = () => {
       {/* Header con botón de crear */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Text size="large" weight="plus">Provider Management</Text>
+          <Text size="large" weight="plus">Gestión de Proveedores</Text>
           <Text className="text-ui-fg-muted">
-            Manage shipping, fulfillment, and inventory providers
+            Administra proveedores de envío, cumplimiento e inventario
           </Text>
         </div>
         <Button
           variant="primary"
           size="small"
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleCreate}
         >
           <Plus className="mr-2" />
-          Add Provider
+          Agregar Proveedor
         </Button>
       </div>
 
       {/* Tabla de providers */}
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Provider</Table.HeaderCell>
-            <Table.HeaderCell>Type</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            <Table.HeaderCell>Configuration</Table.HeaderCell>
-            <Table.HeaderCell>Last Updated</Table.HeaderCell>
-            <Table.HeaderCell>Actions</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {providers.map((provider) => (
-            <Table.Row key={provider.id}>
-              <Table.Cell>
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{getTypeIcon(provider.type)}</span>
-                  <div>
-                    <Text weight="plus">{provider.name}</Text>
-                    <Text size="small" className="text-ui-fg-muted">
-                      {provider.id}
-                    </Text>
-                  </div>
-                </div>
-              </Table.Cell>
-
-              <Table.Cell>
-                <Badge variant="neutral" size="small">
-                  {provider.type}
-                </Badge>
-              </Table.Cell>
-
-              <Table.Cell>
-                <Badge
-                  color={getStatusColor(provider.status)}
-                  size="small"
-                >
-                  {provider.status}
-                </Badge>
-              </Table.Cell>
-
-              <Table.Cell>
-                <div className="space-y-1">
-                  {Object.entries(provider.config).slice(0, 2).map(([key, value]) => (
-                    <div key={key} className="flex items-center gap-2">
-                      <Text size="small" className="text-ui-fg-muted min-w-16">
-                        {key}:
-                      </Text>
-                      <Text size="small">
-                        {typeof value === 'string' && value.includes('***')
-                          ? '***'
-                          : String(value).substring(0, 20) + (String(value).length > 20 ? '...' : '')
-                        }
+      <div className="overflow-x-auto">
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Proveedor</Table.HeaderCell>
+              <Table.HeaderCell>Tipo</Table.HeaderCell>
+              <Table.HeaderCell>Estado</Table.HeaderCell>
+              <Table.HeaderCell>Configuración</Table.HeaderCell>
+              <Table.HeaderCell>Última Actualización</Table.HeaderCell>
+              <Table.HeaderCell>Acciones</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {providers.map((provider) => (
+              <Table.Row key={provider.id}>
+                <Table.Cell>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{getTypeIcon(provider.type)}</span>
+                    <div>
+                      <Text weight="plus">{provider.name}</Text>
+                      <Text size="small" className="text-ui-fg-muted">
+                        {provider.id}
                       </Text>
                     </div>
-                  ))}
-                  {Object.keys(provider.config).length > 2 && (
-                    <Text size="small" className="text-ui-fg-muted">
-                      +{Object.keys(provider.config).length - 2} more...
-                    </Text>
-                  )}
-                </div>
-              </Table.Cell>
+                  </div>
+                </Table.Cell>
 
-              <Table.Cell>
-                <Text size="small" className="text-ui-fg-muted">
-                  {provider.updated_at.toLocaleDateString()}
-                </Text>
-              </Table.Cell>
+                <Table.Cell>
+                  <Badge variant="neutral" size="small">
+                    {provider.type}
+                  </Badge>
+                </Table.Cell>
 
-              <Table.Cell>
-                <div className="flex items-center gap-2">
-                  <IconButton
-                    variant="transparent"
+                <Table.Cell>
+                  <Badge
+                    color={getStatusColor(provider.status)}
                     size="small"
-                    title="View Details"
                   >
-                    <Eye />
-                  </IconButton>
+                    {provider.status}
+                  </Badge>
+                </Table.Cell>
 
-                  <IconButton
-                    variant="transparent"
-                    size="small"
-                    onClick={() => handleEdit(provider)}
-                    title="Edit Provider"
-                  >
-                    <PencilSquare />
-                  </IconButton>
+                <Table.Cell>
+                  <div className="space-y-1">
+                    {Object.entries(provider.config).slice(0, 2).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <Text size="small" className="text-ui-fg-muted min-w-16">
+                          {key}:
+                        </Text>
+                        <Text size="small">
+                          {typeof value === 'string' && value.includes('***')
+                            ? '***'
+                            : String(value).substring(0, 20) + (String(value).length > 20 ? '...' : '')
+                          }
+                        </Text>
+                      </div>
+                    ))}
+                    {Object.keys(provider.config).length > 2 && (
+                      <Text size="small" className="text-ui-fg-muted">
+                        +{Object.keys(provider.config).length - 2} más...
+                      </Text>
+                    )}
+                  </div>
+                </Table.Cell>
 
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={() => handleToggleStatus(provider)}
-                    title={provider.status === 'active' ? 'Deactivate' : 'Activate'}
-                  >
-                    {provider.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </Button>
+                <Table.Cell>
+                  <Text size="small" className="text-ui-fg-muted">
+                    {provider.updated_at.toLocaleDateString()}
+                  </Text>
+                </Table.Cell>
 
-                  <IconButton
-                    variant="transparent"
-                    size="small"
-                    onClick={() => handleDelete(provider)}
-                    title="Delete Provider"
-                  >
-                    <Trash className="text-ui-fg-error" />
-                  </IconButton>
-                </div>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+                <Table.Cell>
+                  <div className="flex items-center gap-2">
+                    <IconButton
+                      variant="transparent"
+                      size="small"
+                      title="Ver Detalles"
+                    >
+                      <Eye />
+                    </IconButton>
+
+                    <IconButton
+                      variant="transparent"
+                      size="small"
+                      onClick={() => handleEdit(provider)}
+                      title="Editar Proveedor"
+                    >
+                      <PencilSquare />
+                    </IconButton>
+
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleToggleStatus(provider)}
+                      title={provider.status === 'active' ? 'Desactivar' : 'Activar'}
+                    >
+                      {provider.status === 'active' ? 'Desactivar' : 'Activar'}
+                    </Button>
+
+                    <IconButton
+                      variant="transparent"
+                      size="small"
+                      onClick={() => handleDelete(provider)}
+                      title="Eliminar Proveedor"
+                    >
+                      <Trash className="text-ui-fg-error" />
+                    </IconButton>
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </div>
 
       {providers.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12">
-          <Text size="large" className="mb-2">No providers found</Text>
+          <Text size="large" className="mb-2">No se encontraron proveedores</Text>
           <Text className="text-ui-fg-muted mb-4">
-            Get started by creating your first provider
+            Comienza creando tu primer proveedor
           </Text>
           <Button
             variant="primary"
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleCreate}
           >
             <Plus className="mr-2" />
-            Add Provider
+            Agregar Proveedor
           </Button>
-        </div>
-      )}
-
-      {/* TODO: Implementar modales de crear y editar */}
-      {showCreateModal && (
-        <div>
-          {/* Modal de crear provider - implementar después */}
-        </div>
-      )}
-
-      {showEditModal && selectedProvider && (
-        <div>
-          {/* Modal de editar provider - implementar después */}
         </div>
       )}
     </div>
