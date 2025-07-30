@@ -1,4 +1,4 @@
-import { useParams } from "@medusajs/admin-sdk"
+import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Heading, Container, Button, Badge, Text } from "@medusajs/ui"
 import { ArrowLeft, PencilSquare } from "@medusajs/icons"
 import { useState, useEffect } from "react"
@@ -14,24 +14,23 @@ interface Provider {
   updated_at: Date
 }
 
-const ProviderDetailPage = () => {
-  const { id } = useParams()
+const ProviderDetailPage = ({ params }: { params: { id: string } }) => {
   const [provider, setProvider] = useState<Provider | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchProvider()
-  }, [id])
+  }, [params.id])
 
   const fetchProvider = async () => {
     try {
       setLoading(true)
       // Mock data - reemplazar con llamada real a la API
       const mockProvider: Provider = {
-        id: id as string,
-        name: id === 'prov_1' ? 'DHL Express' : id === 'prov_2' ? 'FedEx Ground' : 'Local Warehouse',
-        type: id === 'prov_3' ? 'fulfillment' : 'shipping',
-        status: id === 'prov_3' ? 'inactive' : 'active',
+        id: params.id,
+        name: params.id === 'prov_1' ? 'DHL Express' : params.id === 'prov_2' ? 'FedEx Ground' : 'Local Warehouse',
+        type: params.id === 'prov_3' ? 'fulfillment' : 'shipping',
+        status: params.id === 'prov_3' ? 'inactive' : 'active',
         config: {
           api_key: '***masked***',
           endpoint: 'https://api.example.com',
@@ -208,5 +207,9 @@ const ProviderDetailPage = () => {
     </Container>
   )
 }
+
+export const config = defineRouteConfig({
+  label: "Detalles del Proveedor",
+})
 
 export default ProviderDetailPage
