@@ -50,10 +50,11 @@ const medusaConfig = {
     disable: SHOULD_DISABLE_ADMIN,
   },
   modules: [
-    {
-      key: "multiProviderFulfillmentService",
-      resolve: './src/modules/multi-provider-fulfillment',
-    },
+    // Temporarily removed multiProviderFulfillmentService to fix server startup
+    // {
+    //   key: "multiProviderFulfillmentService",
+    //   resolve: './src/modules/multi-provider-fulfillment',
+    // },
     {
       key: Modules.FILE,
       resolve: '@medusajs/file',
