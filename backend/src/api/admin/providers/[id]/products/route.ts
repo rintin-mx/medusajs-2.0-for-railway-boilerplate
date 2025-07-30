@@ -47,7 +47,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Filter logic
     let filteredProducts = products
-    if (search) {
+    if (search && typeof search === 'string') {
       filteredProducts = products.filter(p =>
         p.product_title.toLowerCase().includes(search.toLowerCase()) ||
         p.provider_product_id?.toLowerCase().includes(search.toLowerCase())
@@ -77,8 +77,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
     const { id: provider_id } = req.params
+    const requestBody = req.body as Record<string, any>
     const validatedData = AssignProductSchema.parse({
-      ...req.body,
+      ...requestBody,
       provider_id
     })
 

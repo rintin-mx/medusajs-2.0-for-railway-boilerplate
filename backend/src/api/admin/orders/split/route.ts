@@ -73,7 +73,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     res.status(201).json({
       message: 'Order split successfully',
       order_id,
-      provider_fulfillments
+      provider_fulfillments: providerFulfillments
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -143,7 +143,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     res.json({
       order_id,
-      provider_fulfillments,
+      provider_fulfillments: providerFulfillments,
       total_splits: providerFulfillments.length
     })
   } catch (error) {

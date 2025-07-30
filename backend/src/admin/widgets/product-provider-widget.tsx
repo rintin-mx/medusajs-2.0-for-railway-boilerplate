@@ -91,7 +91,7 @@ const ProductProviderWidget = ({ data }: DetailWidgetProps<ProductWithProviders>
     return (
       <Container className="divide-y p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <Heading level="h2">Providers</Heading>
+          <Heading size="medium">Providers</Heading>
         </div>
         <div className="px-6 py-4">
           <Text>Loading providers...</Text>
@@ -103,7 +103,7 @@ const ProductProviderWidget = ({ data }: DetailWidgetProps<ProductWithProviders>
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">Providers</Heading>
+        <Heading size="medium">Providers</Heading>
         <Button variant="secondary" size="small">
           Assign Provider
         </Button>

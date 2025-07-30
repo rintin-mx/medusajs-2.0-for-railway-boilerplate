@@ -49,7 +49,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Filter logic
     let filteredProviders = providers
-    if (search) {
+    if (search && typeof search === 'string') {
       filteredProviders = providers.filter(p =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.description?.toLowerCase().includes(search.toLowerCase())

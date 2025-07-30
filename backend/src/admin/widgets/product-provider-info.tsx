@@ -32,7 +32,7 @@ const ProductProviderWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     return (
       <Container className="divide-y p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <Heading level="h2">Provider Information</Heading>
+          <Heading size="medium">Provider Information</Heading>
         </div>
         <div className="px-6 py-4">
           <Text>Loading provider information...</Text>
@@ -45,7 +45,7 @@ const ProductProviderWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     return (
       <Container className="divide-y p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <Heading level="h2">Provider Information</Heading>
+          <Heading size="medium">Provider Information</Heading>
         </div>
         <div className="px-6 py-4">
           <Text>No provider assigned to this product</Text>
@@ -57,7 +57,7 @@ const ProductProviderWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">Provider Information</Heading>
+        <Heading size="medium">Provider Information</Heading>
       </div>
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-4">
