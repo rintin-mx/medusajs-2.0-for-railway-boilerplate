@@ -87,6 +87,10 @@ export const ProvidersTable = () => {
     }
   }
 
+  const handleView = (provider: Provider) => {
+    window.location.href = `/admin/providers/${provider.id}`
+  }
+
   const handleEdit = (provider: Provider) => {
     console.log('Edit provider:', provider.id)
   }
@@ -241,6 +245,7 @@ export const ProvidersTable = () => {
                     <IconButton
                       variant="transparent"
                       size="small"
+                      onClick={() => handleView(provider)}
                       title="Ver Detalles"
                     >
                       <Eye />

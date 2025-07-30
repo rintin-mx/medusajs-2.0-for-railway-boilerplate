@@ -1,8 +1,7 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { useParams } from "react-router-dom"
-import { Container, Heading, Button, Badge, Text } from "@medusajs/ui"
-import { useState, useEffect } from "react"
+import { useParams } from "@medusajs/admin-sdk"
+import { Heading, Container, Button, Badge, Text } from "@medusajs/ui"
 import { ArrowLeft, PencilSquare } from "@medusajs/icons"
+import { useState, useEffect } from "react"
 
 interface Provider {
   id: string
@@ -15,7 +14,7 @@ interface Provider {
   updated_at: Date
 }
 
-const ProviderDetailsPage = () => {
+const ProviderDetailPage = () => {
   const { id } = useParams()
   const [provider, setProvider] = useState<Provider | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,29 +26,27 @@ const ProviderDetailsPage = () => {
   const fetchProvider = async () => {
     try {
       setLoading(true)
-      // Mock data - En producción, llamar a la API real
+      // Mock data - reemplazar con llamada real a la API
       const mockProvider: Provider = {
-        id: id!,
-        name: 'DHL Express',
-        type: 'shipping',
-        status: 'active',
+        id: id as string,
+        name: id === 'prov_1' ? 'DHL Express' : id === 'prov_2' ? 'FedEx Ground' : 'Local Warehouse',
+        type: id === 'prov_3' ? 'fulfillment' : 'shipping',
+        status: id === 'prov_3' ? 'inactive' : 'active',
         config: {
-          api_key: 'dhl_live_key_***',
-          endpoint: 'https://api.dhl.com/v1',
+          api_key: '***masked***',
+          endpoint: 'https://api.example.com',
           region: 'US',
           timeout: 30000,
-          max_retries: 3,
-          webhook_url: 'https://mystore.com/webhooks/dhl'
+          retries: 3
         },
         metadata: {
           priority: 'high',
-          cost_per_kg: 15.50,
-          estimated_delivery_days: 2,
-          supports_tracking: true
+          created_by: 'admin@example.com'
         },
         created_at: new Date('2024-01-15'),
         updated_at: new Date('2024-01-20')
       }
+
       setProvider(mockProvider)
     } catch (error) {
       console.error('Error fetching provider:', error)
@@ -58,24 +55,14 @@ const ProviderDetailsPage = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <Container className="divide-y p-0">
-        <div className="px-6 py-4">
-          <Text>Loading provider details...</Text>
-        </div>
-      </Container>
-    )
+  const handleEdit = () => {
+    console.log('Edit provider:', provider?.id)
   }
 
-  if (!provider) {
-    return (
-      <Container className="divide-y p-0">
-        <div className="px-6 py-4">
-          <Text>Provider not found</Text>
-        </div>
-      </Container>
-    )
+  const handleToggleStatus = () => {
+    if (!provider) return
+    const newStatus = provider.status === 'active' ? 'inactive' : 'active'
+    console.log(`Toggle status to: ${newStatus}`)
   }
 
   const getStatusColor = (status: string) => {
@@ -96,14 +83,29 @@ const ProviderDetailsPage = () => {
     }
   }
 
+  if (loading) {
+    return (
+      <Container className="p-6">
+        <Text>Cargando proveedor...</Text>
+      </Container>
+    )
+  }
+
+  if (!provider) {
+    return (
+      <Container className="p-6">
+        <Text>Proveedor no encontrado</Text>
+      </Container>
+    )
+  }
+
   return (
     <Container className="divide-y p-0">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <Button variant="secondary" size="small">
-            <ArrowLeft className="mr-2" />
-            Back to Providers
+          <Button variant="secondary" size="small" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-3">
             <span className="text-2xl">{getTypeIcon(provider.type)}</span>
@@ -113,125 +115,98 @@ const ProviderDetailsPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Badge color={getStatusColor(provider.status)} size="small">
             {provider.status}
           </Badge>
-          <Button variant="secondary" size="small">
-            <PencilSquare className="mr-2" />
-            Edit Provider
+          <Button variant="secondary" size="small" onClick={handleEdit}>
+            <PencilSquare className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+          <Button
+            variant={provider.status === 'active' ? 'danger' : 'primary'}
+            size="small"
+            onClick={handleToggleStatus}
+          >
+            {provider.status === 'active' ? 'Desactivar' : 'Activar'}
           </Button>
         </div>
       </div>
 
-      {/* Basic Information */}
-      <div className="px-6 py-4">
-        <Heading level="h2" className="mb-4">Basic Information</Heading>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <Text className="text-ui-fg-subtle mb-1 font-medium">Provider Name</Text>
-            <Text>{provider.name}</Text>
-          </div>
-          <div>
-            <Text className="text-ui-fg-subtle mb-1 font-medium">Type</Text>
-            <Badge variant="neutral" size="small">
-              {provider.type}
-            </Badge>
-          </div>
-          <div>
-            <Text className="text-ui-fg-subtle mb-1 font-medium">Status</Text>
-            <Badge color={getStatusColor(provider.status)} size="small">
-              {provider.status}
-            </Badge>
-          </div>
-          <div>
-            <Text className="text-ui-fg-subtle mb-1 font-medium">Last Updated</Text>
-            <Text>{provider.updated_at.toLocaleString()}</Text>
-          </div>
-        </div>
-      </div>
-
-      {/* Configuration */}
-      <div className="px-6 py-4">
-        <Heading level="h3" className="mb-4">Configuration</Heading>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(provider.config).map(([key, value]) => (
-            <div key={key} className="p-4 border border-ui-border-base rounded-lg">
-              <Text className="text-ui-fg-subtle mb-1 font-medium">
-                {key.replace(/_/g, ' ').replace(/\w\S*/g, (txt) =>
-                  txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                )}
-              </Text>
-              <Text>
-                {typeof value === 'string' && (key.includes('key') || key.includes('secret'))
-                  ? '***' + value.slice(-4)
-                  : String(value)
-                }
-              </Text>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Metadata */}
-      {provider.metadata && Object.keys(provider.metadata).length > 0 && (
-        <div className="px-6 py-4">
-          <Heading level="h3" className="mb-4">Metadata</Heading>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(provider.metadata).map(([key, value]) => (
-              <div key={key} className="p-4 border border-ui-border-base rounded-lg">
-                <Text className="text-ui-fg-subtle mb-1 font-medium">
-                  {key.replace(/_/g, ' ').replace(/\w\S*/g, (txt) =>
-                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                  )}
-                </Text>
-                <Text>{String(value)}</Text>
+      {/* Content */}
+      <div className="px-6 py-4 space-y-6">
+        {/* Información General */}
+        <div>
+          <Heading level="h2">Información General</Heading>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Text weight="plus" className="text-ui-fg-muted">Tipo</Text>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="neutral" size="small">{provider.type}</Badge>
               </div>
-            ))}
+            </div>
+            <div>
+              <Text weight="plus" className="text-ui-fg-muted">Estado</Text>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge color={getStatusColor(provider.status)} size="small">
+                  {provider.status}
+                </Badge>
+              </div>
+            </div>
+            <div>
+              <Text weight="plus" className="text-ui-fg-muted">Creado</Text>
+              <Text className="mt-1">{provider.created_at.toLocaleDateString()}</Text>
+            </div>
+            <div>
+              <Text weight="plus" className="text-ui-fg-muted">Última actualización</Text>
+              <Text className="mt-1">{provider.updated_at.toLocaleDateString()}</Text>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Activity Log */}
-      <div className="px-6 py-4">
-        <Heading level="h3" className="mb-4">Recent Activity</Heading>
-        <div className="space-y-3">
-          {/* Mock activity data */}
-          <div className="flex items-center gap-3 p-3 bg-ui-bg-subtle rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <div>
-              <Text size="small" weight="plus">Provider activated</Text>
-              <Text size="small" className="text-ui-fg-muted">
-                2 hours ago
-              </Text>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-ui-bg-subtle rounded-lg">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <div>
-              <Text size="small" weight="plus">Configuration updated</Text>
-              <Text size="small" className="text-ui-fg-muted">
-                1 day ago
-              </Text>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-ui-bg-subtle rounded-lg">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <div>
-              <Text size="small" weight="plus">Provider created</Text>
-              <Text size="small" className="text-ui-fg-muted">
-                15 days ago
-              </Text>
+        {/* Configuración */}
+        <div>
+          <Heading level="h2">Configuración</Heading>
+          <div className="mt-4 bg-ui-bg-subtle rounded-md p-4">
+            <div className="space-y-3">
+              {Object.entries(provider.config).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <Text weight="plus" className="text-ui-fg-muted capitalize">
+                    {key.replace(/_/g, ' ')}
+                  </Text>
+                  <Text className="font-mono text-sm">
+                    {typeof value === 'string' && value.includes('***')
+                      ? '***masked***'
+                      : String(value)
+                    }
+                  </Text>
+                </div>
+              ))}
             </div>
           </div>
         </div>
+
+        {/* Metadata */}
+        {provider.metadata && Object.keys(provider.metadata).length > 0 && (
+          <div>
+            <Heading level="h2">Metadatos</Heading>
+            <div className="mt-4 bg-ui-bg-subtle rounded-md p-4">
+              <div className="space-y-3">
+                {Object.entries(provider.metadata).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <Text weight="plus" className="text-ui-fg-muted capitalize">
+                      {key.replace(/_/g, ' ')}
+                    </Text>
+                    <Text className="font-mono text-sm">{String(value)}</Text>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Container>
   )
 }
 
-export const config = defineRouteConfig({
-  label: "Provider Details",
-})
-
-export default ProviderDetailsPage
+export default ProviderDetailPage
